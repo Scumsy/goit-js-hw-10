@@ -1,4 +1,6 @@
 import './css/styles.css';
+import { fetchCountries } from './fetchCountries';
+
 import debounce from 'lodash.debounce';
 import Notiflix from 'notiflix';
 
@@ -15,27 +17,30 @@ function getDataSearch(data) {
   inputForSearch = data.target.value.trim();
   console.log(inputForSearch);
   if (inputForSearch !== '') {
-    getDataFromServer(inputForSearch);
+    return fetchCountries(inputForSearch)
+      .then(country => {
+        console.log(country);
+        console.log(country.status);
+        if (country.length > 10) {
+          showInfoNotification();
+        }
+        if (country.status === 404) {
+          onError();
+        }
+        //   return country;
+      })
+      .catch(error => {});
   }
 }
 
-function getDataFromServer(input) {
-  fetch(`https://restcountries.com/v2/name/${input}`)
-    .then(res => {
-      return res.json();
-    })
-    .then(country => {
-      console.log(country);
-      if (country.length > 10) {
-        showInfoNotification();
-        return;
-      }
-      return country;
-    });
+function onError() {
+  Notiflix.Notify.failure('Oops, there is no country with that name');
 }
-
 function showInfoNotification() {
   Notiflix.Notify.info(
     'Too many matches found. Please enter a more specific name.'
   );
 }
+
+
+function makeCountryMarkup()
