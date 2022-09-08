@@ -8,27 +8,15 @@ const DEBOUNCE_DELAY = 300;
 let inputForSearch;
 // ---------------Search form-----------------
 const inputData = document.querySelector('#search-box');
-const searchData = inputData.addEventListener(
-  'input',
-  debounce(getDataSearch, DEBOUNCE_DELAY)
-);
+inputData.addEventListener('input', debounce(getDataSearch, DEBOUNCE_DELAY));
+const countryDisplay = document.querySelector('.country-info');
+const countryListDisplay = document.querySelector('.country-list');
 
 function getDataSearch(data) {
   inputForSearch = data.target.value.trim();
-  console.log(inputForSearch);
   if (inputForSearch !== '') {
     return fetchCountries(inputForSearch)
-      .then(country => {
-        console.log(country);
-        console.log(country.status);
-        if (country.length > 10) {
-          showInfoNotification();
-        }
-        if (country.status === 404) {
-          onError();
-        }
-        //   return country;
-      })
+      .then(displayCountry)
       .catch(error => {});
   }
 }
@@ -42,5 +30,65 @@ function showInfoNotification() {
   );
 }
 
+function displayCountry(country) {
+  if (country.length > 10) {
+    showInfoNotification();
+  } else if (country.status === 404) {
+    onError();
+  } else if (country.length === 1 && country.innerHTML !== '') {
+    renderCountry(country);
+  }
+  if (country.length > 1) {
+    countryDisplay.innerHTML = '';
+  }
+  if (country.length > 1 && country.length <= 10) {
+    renderCountryList(country);
+  } else {
+    countryListDisplay.innerHTML = '';
+  }
+}
 
-function makeCountryMarkup()
+function makeCountryMarkup(name, capital, population, flag, languages) {
+  const markup = `      <img src="${flag}" alt="${name} official flag" width="150" height="100" />
+      <h1>${name}</h1>
+      <ul class="country-info-list">
+        <li><span class="country-info__header">Capital:</span>${capital}</li>
+        <li><span class="country-info__header">Population:</span>${population}</li>
+        <li><span class="country-info__header">Languages:</span>${languages}</li>
+      </ul>`;
+  return markup;
+}
+
+function makeCountrylistMarkup(name, flag) {
+  const markupList = `<li><img src="${flag}" alt="${name} official flag" width="40" height="25" />${name}</li>`;
+  return markupList;
+}
+
+function renderCountry(country) {
+  const languagesNames = [];
+  let languagesOfCountry = country[0].languages;
+
+  for (const languageName of languagesOfCountry) {
+    languagesNames.push(languageName.name);
+  }
+
+  const newCountry = makeCountryMarkup(
+    country[0].name,
+    country[0].capital,
+    country[0].population,
+    country[0].flag,
+    languagesNames.join(', ')
+  );
+  countryDisplay.innerHTML = newCountry;
+}
+
+function renderCountryList(country) {
+  for (let i = 0; i < country.length; i += 1) {
+    const newCountryList = makeCountrylistMarkup(
+      country[i].name,
+      country[i].flag
+    );
+
+    countryListDisplay.insertAdjacentHTML('beforeend', newCountryList);
+  }
+}
