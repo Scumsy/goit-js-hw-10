@@ -16,8 +16,11 @@ function getDataSearch(data) {
   inputForSearch = data.target.value.trim();
   if (inputForSearch !== '') {
     return fetchCountries(inputForSearch)
-      .then(debounce(displayCountry, DEBOUNCE_DELAY))
+      .then(displayCountry)
       .catch(error => {});
+  } else {
+    countryDisplay.innerHTML = '';
+    countryListDisplay.innerHTML = '';
   }
 }
 
@@ -31,7 +34,6 @@ function showInfoNotification() {
 }
 
 function displayCountry(country) {
-  console.log(country);
   if (country.length > 10) {
     showInfoNotification();
   } else if (country.status === 404) {
