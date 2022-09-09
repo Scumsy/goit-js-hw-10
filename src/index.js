@@ -16,7 +16,7 @@ function getDataSearch(data) {
   inputForSearch = data.target.value.trim();
   if (inputForSearch !== '') {
     return fetchCountries(inputForSearch)
-      .then(displayCountry)
+      .then(debounce(displayCountry, DEBOUNCE_DELAY))
       .catch(error => {});
   }
 }
@@ -31,6 +31,7 @@ function showInfoNotification() {
 }
 
 function displayCountry(country) {
+  console.log(country);
   if (country.length > 10) {
     showInfoNotification();
   } else if (country.status === 404) {
@@ -49,8 +50,8 @@ function displayCountry(country) {
 }
 
 function makeCountryMarkup(name, capital, population, flag, languages) {
-  const markup = `      <img src="${flag}" alt="${name} official flag" width="150" height="100" />
-      <h1>${name}</h1>
+  const markup = `      <div class="flag-and-name"><img class="country-flag" src="${flag}" alt="${name} official flag" width="50" height="40" />
+      <h1>${name}</h1></div>
       <ul class="country-info-list">
         <li><span class="country-info__header">Capital:</span>${capital}</li>
         <li><span class="country-info__header">Population:</span>${population}</li>
@@ -60,14 +61,13 @@ function makeCountryMarkup(name, capital, population, flag, languages) {
 }
 
 function makeCountrylistMarkup(name, flag) {
-  const markupList = `<li><img src="${flag}" alt="${name} official flag" width="40" height="25" />${name}</li>`;
+  const markupList = `<li class="country-list__item"><img class="country-list__image" src="${flag}" alt="${name} official flag" width="40" height="25" /><span>${name}</span></li>`;
   return markupList;
 }
 
 function renderCountry(country) {
   const languagesNames = [];
   let languagesOfCountry = country[0].languages;
-
   for (const languageName of languagesOfCountry) {
     languagesNames.push(languageName.name);
   }
@@ -76,7 +76,7 @@ function renderCountry(country) {
     country[0].name,
     country[0].capital,
     country[0].population,
-    country[0].flag,
+    country[0].flags.svg,
     languagesNames.join(', ')
   );
   countryDisplay.innerHTML = newCountry;
@@ -86,7 +86,7 @@ function renderCountryList(country) {
   for (let i = 0; i < country.length; i += 1) {
     const newCountryList = makeCountrylistMarkup(
       country[i].name,
-      country[i].flag
+      country[i].flags.svg
     );
 
     countryListDisplay.insertAdjacentHTML('beforeend', newCountryList);
